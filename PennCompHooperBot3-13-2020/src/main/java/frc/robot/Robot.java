@@ -288,7 +288,7 @@ public class Robot extends TimedRobot {
     if(m_operatorStick.getRawButton(2)) {
       intakeMotor.set(intakeSpeed);
     } else {
-      SintakeMotor.set(0);
+      intakeMotor.set(0);
     }
 
     if(m_operatorStick.getRawButton(7)) {
