@@ -21,10 +21,9 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
     WPI_TalonFX rearRight;
     MecanumDrive m_drive;
 
-    NetworkTableEntry frontLeftShuffle;
-    NetworkTableEntry rearLeftShuffle;
-    NetworkTableEntry frontRightShuffle;
-    NetworkTableEntry rearRightShuffle;
+    NetworkTableEntry frontShuffle;
+    NetworkTableEntry rearShuffle;
+    
     public WeightedMecanumDrive(WPI_TalonFX frontLeft, WPI_TalonFX rearLeft, WPI_TalonFX frontRight, WPI_TalonFX rearRight) {
         m_drive = new MecanumDrive(frontLeft, rearLeft, frontRight, rearRight);
         this.frontLeft = frontLeft;
@@ -32,10 +31,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
         this.frontRight = frontRight;
         this.rearRight = rearRight;
 
-        frontLeftShuffle = Shuffleboard.getTab("Driving").add("Front Left Weighted", 0.7).getEntry();
-        rearLeftShuffle = Shuffleboard.getTab("Driving").add("Rear Left Weighted", 1).getEntry();
-        frontRightShuffle = Shuffleboard.getTab("Driving").add("Front Right Weighted", 0.7).getEntry();
-        rearRightShuffle = Shuffleboard.getTab("Driving").add("Rear Right Weighted", 1).getEntry();
+        frontShuffle = Shuffleboard.getTab("Driving").add("Front Weighted", 0.4).getEntry();
+        rearShuffle = Shuffleboard.getTab("Driving").add("Rear Weighted", 0.7).getEntry();
     }
 
     // this method will drive the robot normally when moving in the Y
@@ -45,28 +42,26 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
     public void driveXY(double x, double y, boolean rightButton, boolean leftButton) {
 
         // receive weights from shuffleboard so drivers can edit between matches quickly
-        double frontLeftWeighted = frontLeftShuffle.getDouble(0.7);
-        double rearLeftWeighted = frontLeftShuffle.getDouble(1);
-        double frontRightWeighted = frontLeftShuffle.getDouble(0.7);
-        double rearRightWeighted = frontLeftShuffle.getDouble(1);
-
+        double frontWeighted = frontShuffle.getDouble(0.7);
+        double rearWeighted = rearShuffle.getDouble(1);
+        
         // drive normally when strafe buttons are not pressed
         if(!rightButton && !leftButton) {
-            m_drive.driveCartesian(y, 0, x);
+            m_drive.driveCartesian(0, y, x);
         } 
         // when right button is pressed, strafe right.
         else if(rightButton && !leftButton) {
-            frontLeft.set(frontLeftWeighted);
-            rearLeft.set(-1 * rearLeftWeighted);
-            frontRight.set(-1 * frontRightWeighted);
-            rearRight.set(rearRightWeighted);
+            frontLeft.set(-1 * frontWeighted);
+            rearLeft.set(rearWeighted);
+            frontRight.set(-1 * frontWeighted);
+            rearRight.set(rearWeighted);
         }
         // when left button is pressed, strafe left.
         else if(!rightButton && leftButton) {
-            frontLeft.set(-1 * frontLeftWeighted);
-            rearLeft.set(rearLeftWeighted);
-            frontRight.set(frontRightWeighted);
-            rearRight.set(-1 * rearRightWeighted);
+            frontLeft.set(frontWeighted);
+            rearLeft.set(-1 * rearWeighted);
+            frontRight.set(frontWeighted);
+            rearRight.set(-1 * rearWeighted);
         }
     }
  }

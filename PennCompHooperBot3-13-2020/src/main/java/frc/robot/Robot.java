@@ -182,7 +182,7 @@ public class Robot extends TimedRobot {
     shooter = new Shooter(shooterMotor, elevator);
     weightedDrive = new WeightedMecanumDrive(frontLeft, rearLeft, frontRight, rearRight);
 
-    camera.startAutomaticCapture();
+    // camera.startAutomaticCapture();
   }
 
   // method that runs doing autonomous mode and teleop
@@ -288,7 +288,7 @@ public class Robot extends TimedRobot {
     if(m_operatorStick.getRawButton(2)) {
       intakeMotor.set(intakeSpeed);
     } else {
-      intakeMotor.set(0);
+      SintakeMotor.set(0);
     }
 
     if(m_operatorStick.getRawButton(7)) {
@@ -327,7 +327,7 @@ public class Robot extends TimedRobot {
     //m_robotDrive.driveCartesian(m_driverStick.getX() * driveSpeed, m_driverStick.getY() * driveSpeed, m_driverStick.getZ() *driveSpeed, 0.0);
 
     // weighted strafing method to offset weight inbalance
-    weightedDrive.driveXY(m_driverStick.getX() * driveSpeed, m_driverStick.getY() * driveSpeed, 
-                          m_driverStick.getRawButton(10), m_driverStick.getRawButton(11));
+    weightedDrive.driveXY(-1 * m_driverStick.getX() * driveSpeed, m_driverStick.getY() * driveSpeed, 
+                          m_driverStick.getRawButton(12), m_driverStick.getRawButton(11));
   }
 }
