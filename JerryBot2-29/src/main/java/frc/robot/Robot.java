@@ -42,8 +42,9 @@ public class Robot extends TimedRobot {
   private VictorSP conveyer;
   private VictorSP shooterLeft;
   private PWMSparkMax climberMotor;
+  private VictorSP Walker;
   // private VictorSP wheelOfFortuneMotor;
-  // private VictorSP WoF_upDown;
+  //private VictorSP WoF_upDown;
   private Joystick m_stick;
 
   //speed controller groups
@@ -102,6 +103,7 @@ public class Robot extends TimedRobot {
     conveyer = new VictorSP(8);
     shooterLeft = new VictorSP(5);
     climberMotor = new PWMSparkMax(6);
+    Walker = new VictorSP(9);
     //WoF_upDown = new VictorSP(9);
     
     leftDrive = new SpeedControllerGroup(frontLeftDrive, backLeftDrive);
@@ -150,6 +152,15 @@ public class Robot extends TimedRobot {
         shooterLeft.setSpeed(0);
         // Set intake back to 0 when not pressed
       }
+    }
+    if (m_stick.getRawButton(5)){
+      Walker.setspeed(1);
+    } else if(m_stick.getRawButton(6)){
+      Walker.setspeed(-1);
+    } else{
+      Walker.setspeed(0);
+    }
+      
     }
     
     /* boolean WoFReady = WoFReadyShuffle.getBoolean(false);

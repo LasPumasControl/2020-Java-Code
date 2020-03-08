@@ -16,7 +16,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 // import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.drive.MecanumDrive;
+// import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 import com.revrobotics.CANSparkMax;
@@ -40,10 +40,11 @@ public class Robot extends TimedRobot {
   private static final int kElevatorChannel = 6;
   private static final int kElevatorHelperChannel = 4;
 
-  private static final int kClimberChannel = 5;
-  private static final int kTransverseChannel = 7;
+  private static final int kClimberChannel = 7;
+  private static final int kTransverseChannel = 5;
 
   private static final int kShooterChannel = 1;
+  // private static final int kShooterChannel = 12;
 
   // private static final int kWheelOfFortuneChannel = 5;
   // private static final int kWheelOfFortune_Up_Down_Channel = 6;
@@ -67,6 +68,7 @@ public class Robot extends TimedRobot {
   CANSparkMax transverseMotor;
 
   CANSparkMax shooterMotor;
+  // WPI_TalonFX shooterMotor;
 
   // CANSparkMax wheelOfFortuneMotor;
   // CANSparkMax wheelOfFortuneUpDownMotor;
@@ -82,7 +84,7 @@ public class Robot extends TimedRobot {
   NetworkTableEntry climberShuffle;
   NetworkTableEntry elevatorHelperShuffle;
 
-  private MecanumDrive m_robotDrive;
+  // private MecanumDrive m_robotDrive;
   private Joystick m_driverStick;
   private Joystick m_operatorStick;
 
@@ -141,6 +143,8 @@ public class Robot extends TimedRobot {
     climberMotor = new CANSparkMax(kClimberChannel, MotorType.kBrushless);
     transverseMotor = new CANSparkMax(kTransverseChannel, MotorType.kBrushed);
 
+    // shooterMotor = new WPI_TalonFX(kShooterChannel);
+
     shooterMotor = new CANSparkMax(kShooterChannel, MotorType.kBrushed);
 
     // wheelOfFortuneMotor = new CANSparkMax(kWheelOfFortuneChannel, MotorType.kBrushless);
@@ -150,7 +154,7 @@ public class Robot extends TimedRobot {
     // WoFReadyShuffle = Shuffleboard.getTab("Driving").add("WoF Ready?", false).getEntry();
     mode = Shuffleboard.getTab("Driving").add("Manual Mode?", true).getEntry();
     shooterShuffle = Shuffleboard.getTab("Driving").add("Shooter Speed", 1).getEntry();
-    conveyerShuffle = Shuffleboard.getTab("Driving").add("Conveyer Speed", 1).getEntry();
+    conveyerShuffle = Shuffleboard.getTab("Driving").add("Conveyer Speed", -1).getEntry();
     driveShuffle = Shuffleboard.getTab("Driving").add("Drive Speed", 1).getEntry();
     elevatorShuffle = Shuffleboard.getTab("Driving").add("Elevator Speed", 1).getEntry();
     intakeShuffle = Shuffleboard.getTab("Driving").add("Intake Speed", 1).getEntry();
@@ -166,7 +170,7 @@ public class Robot extends TimedRobot {
     rearRight.setInverted(true);
 
     // set up drive train object
-    m_robotDrive = new MecanumDrive(frontLeft, rearLeft, frontRight, rearRight);
+    // m_robotDrive = new MecanumDrive(frontLeft, rearLeft, frontRight, rearRight);
 
     // set up joystick
     m_driverStick = new Joystick(kDriverJoystickChannel);
@@ -178,7 +182,8 @@ public class Robot extends TimedRobot {
     intakeLimit = new DigitalInput(0);
     shooterLimit = new DigitalInput(1);
 
-    elevator = new Elevator(intakeLimit, shooterLimit, conveyerMotor, elevatorMotor, elevatorHelperMotor);
+    elevator = new Elevator(intakeLimit, shooterLimit, conveyerMotor,
+                       elevatorMotor, elevatorHelperMotor, m_operatorStick, shooterMotor);
     shooter = new Shooter(shooterMotor, elevator);
     weightedDrive = new WeightedMecanumDrive(frontLeft, rearLeft, frontRight, rearRight);
 
@@ -193,7 +198,7 @@ public class Robot extends TimedRobot {
      * current in increments of 0.125A. At low currents
      * the current readings tend to be less accurate.
      */
-    SmartDashboard.putNumber("Current Channel 7", m_pdp.getCurrent(7));
+    SmartDashboard.putNumber("Current Channel 0", m_pdp.getCurrent(0));
 
     /*
      * Get the voltage going into the PDP, in Volts.
@@ -211,6 +216,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Front Right Temperature", frontRight.getTemperature());
     SmartDashboard.putNumber("Rear Right Temperature", rearRight.getTemperature());
 
+    SmartDashboard.putBoolean("Intake Limit Switch", intakeLimit.get());
+    SmartDashboard.putBoolean("Shooter Limit Switch", shooterLimit.get());
     // boolean WoFReady = WoFReadyShuffle.getBoolean(false);
     /* 
     if(WoFReady == true) {
@@ -242,13 +249,13 @@ public class Robot extends TimedRobot {
 
     boolean manualMode = mode.getBoolean(true);
 
-    double conveyerSpeed = conveyerShuffle.getDouble(1);
+    double conveyerSpeed = conveyerShuffle.getDouble(-1);
     double shooterSpeed = shooterShuffle.getDouble(1);
     double elevatorSpeed = elevatorShuffle.getDouble(1);
     double intakeSpeed = intakeShuffle.getDouble(1);
     double transverseSpeed = transverseShuffle.getDouble(1);
     double climberSpeed = climberShuffle.getDouble(1);
-    double elevatorHelperSpeed = elevatorHelperShuffle.getDouble(1);
+    double elevatorHelperSpeed = elevatorHelperShuffle.getDouble(0.6);
 
 
     if (manualMode) {
@@ -276,12 +283,19 @@ public class Robot extends TimedRobot {
         elevatorHelperMotor.set(0);
       }
     } else {
+      if(m_operatorStick.getRawButton(1)) {
+        elevator.startShooter(elevatorSpeed, elevatorHelperSpeed, conveyerSpeed, shooterSpeed);
+      }
 
-     // if(m_operatorStick.getRawButton(1)) {
-       // shooter.shoot(shooterSpeed, conveyerSpeed, elevatorSpeed, elevatorHelperSpeed);
-      //}
+      // if(m_operatorStick.getRawButton(10)) {
+        // elevator.runConveyer(conveyerSpeed, elevatorHelperSpeed);
+      // }
 
-      //elevator.runElevator(conveyerSpeed, elevatorSpeed, elevatorHelperSpeed);
+      // if(m_operatorStick.getRawButton(11)) {
+        //elevator.runElevatorUp(elevatorSpeed, elevatorHelperSpeed, conveyerSpeed);
+      // }
+
+      elevator.runElevator(conveyerSpeed, elevatorSpeed, elevatorHelperSpeed);
     }
     
 
@@ -291,14 +305,26 @@ public class Robot extends TimedRobot {
       intakeMotor.set(0);
     }
 
-    if(m_operatorStick.getRawButton(7)) {
+    if(m_operatorStick.getRawButton(8)) {
       transverseMotor.set(transverseSpeed);
     } else {
       transverseMotor.set(0);
     }
 
-    if(m_operatorStick.getRawButton(8)) {
+    if(m_operatorStick.getRawButton(9)) {
+      transverseMotor.set(-1 * transverseSpeed);
+    } else {
+      transverseMotor.set(0);
+    }
+
+    if(m_operatorStick.getRawButton(6)) {
       climberMotor.set(climberSpeed);
+    } else {
+      climberMotor.set(0);
+    }
+
+    if(m_operatorStick.getRawButton(7)) {
+      climberMotor.set(-1 * climberSpeed);
     } else {
       climberMotor.set(0);
     }
@@ -328,6 +354,6 @@ public class Robot extends TimedRobot {
 
     // weighted strafing method to offset weight inbalance
     weightedDrive.driveXY(-1 * m_driverStick.getX() * driveSpeed, m_driverStick.getY() * driveSpeed, 
-                          m_driverStick.getRawButton(12), m_driverStick.getRawButton(11));
+                          m_driverStick.getRawButton(4), m_driverStick.getRawButton(3));
   }
 }
